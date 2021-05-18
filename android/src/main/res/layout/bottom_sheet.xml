@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:orientation="vertical">
+
+  <TextView
+    android:id="@+id/albumTitle"
+    style="@style/ActionItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:text="@string/browse_images_from"
+    android:textColor="#737373"
+    app:autoSizeMinTextSize="8sp"
+    app:autoSizeMaxTextSize="14sp"
+    app:autoSizeStepGranularity="1sp"
+    app:autoSizeTextType="uniform"
+    android:textStyle="bold" />
+
+  <LinearLayout
+    android:id="@+id/option1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal">
+
+    <TextView
+      android:id="@+id/textView2"
+      style="@style/ActionItem"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:text="@string/my_albums"
+      android:textColor="#737373"
+      app:autoSizeMinTextSize="8sp"
+      app:autoSizeMaxTextSize="14sp"
+      app:autoSizeStepGranularity="1sp"
+      app:autoSizeTextType="uniform" />
+  </LinearLayout>
+
+  <LinearLayout
+    android:id="@+id/option2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal">
+
+    <TextView
+      android:id="@+id/textView"
+      style="@style/ActionItem"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:text="@string/other_apps"
+      android:textColor="#737373"
+      app:autoSizeMinTextSize="8sp"
+      app:autoSizeMaxTextSize="14sp"
+      app:autoSizeStepGranularity="1sp"
+      app:autoSizeTextType="uniform" />
+  </LinearLayout>
+</LinearLayout>

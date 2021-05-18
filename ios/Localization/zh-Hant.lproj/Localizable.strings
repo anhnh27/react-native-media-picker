@@ -1,0 +1,19 @@
+/* 
+  Localizable.strings
+  MediaPicker
+
+  Created by Alex Nguyen on 11/03/2021.
+  Copyright © 2021 Facebook. All rights reserved.
+*/
+"browse_images_from" = "我的檔案";
+"other_apps" = "其他應用程式";
+"my_albums" = "我的相簿";
+"number_of_photos" = "%@ 張相片";
+"number_of_photos_selected" = "已選 %@ 張相片";
+"close" = "取消";
+"clear_all" = "取消";
+"done" = "完成";
+"photo_limitation_warning" = "對不起，您不能選取多於{#)張相片。";
+"limited_photo_access_message" = "此應用程式只能取用您所選的相片。";
+"manage" = "管理";
+"please_allow_access_to_photos" = " 請允許相片的存取權限。";

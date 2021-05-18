@@ -1,0 +1,15 @@
+<resources>
+  <string name="cancel">Cancel</string>
+  <string name="close">Close</string>
+  <string name="other_apps">Other apps</string>
+  <string name="my_albums">My albums</string>
+  <string name="browse_images_from">BROWSE IMAGES FROM</string>
+
+  <!-- this for xml contentDescription usage-->
+  <string name="thumbnail">thumbnail</string>
+  <string name="clear_all">Clear all</string>
+  <string name="number_of_photos">%1$s photo(s)</string>
+  <string name="number_of_photos_selected">%1$s photo(s) selected</string>
+  <string name="photo_limitation_warning">You cannot select more than %1$s photos!</string>
+  <string name="done">Done</string>
+</resources>

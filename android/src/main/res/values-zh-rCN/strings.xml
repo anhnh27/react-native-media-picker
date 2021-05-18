@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!-- this for xml contentDescription usage-->
+  <string name="thumbnail">thumbnail</string>
+  <string name="browse_images_from">我的檔案</string>
+  <string name="other_apps">其他應用程式</string>
+  <string name="my_albums">我的相簿</string>
+  <string name="number_of_photos">%1$s 張相片</string>
+  <string name="number_of_photos_selected">已選 %1$s 張相片</string>
+  <string name="close">取消</string>
+  <string name="clear_all">取消</string>
+  <string name="done">完成</string>
+  <string name="photo_limitation_warning">對不起，您不能選取多於{#)張相片。</string>
+</resources>

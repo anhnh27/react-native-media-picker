@@ -1,0 +1,19 @@
+/* 
+  Localizable.strings
+  MediaPicker
+
+  Created by Alex Nguyen on 11/03/2021.
+  Copyright © 2021 Facebook. All rights reserved.
+*/
+"browse_images_from" = "Browse images from";
+"other_apps" = "Other apps";
+"my_albums" = "My Albums";
+"number_of_photos" = "%@ photo(s)";
+"number_of_photos_selected" = "%@ photo(s) selected";
+"close" = "Close";
+"clear_all" = "Clear all";
+"done" = "Done";
+"photo_limitation_warning" = "You cannot select more than %@ photos!";
+"limited_photo_access_message" = "App can only access selected photos";
+"manage" = "Manage";
+"please_allow_access_to_photos" = "Please allow access to your photos";

@@ -1,0 +1,27 @@
+{
+  "name": "react-native-media-picker",
+  "version": "0.0.10",
+  "summary": "react native media picker",
+  "homepage": "https://git.realestate.com.au/react-native/react-native-media-picker#readme",
+  "license": "MIT",
+  "authors": "Alex <alex.nguyen@rea-group.com> (https://github.com/alexnguyenrea)",
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source": {
+    "git": "https://git.realestate.com.au/react-native/react-native-media-picker.git",
+    "tag": "0.0.10"
+  },
+  "source_files": "ios/**/*.{h,m,mm,swift,xib,storyboard}",
+  "resource_bundles": {
+    "MediaPicker": [
+      "ios/Localization/**/*.strings",
+      "ios/Module/**/*.storyboard"
+    ]
+  },
+  "dependencies": {
+    "React-Core": [
+
+    ]
+  }
+}

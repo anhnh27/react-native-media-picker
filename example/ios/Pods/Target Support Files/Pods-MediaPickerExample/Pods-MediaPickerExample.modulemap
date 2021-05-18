@@ -1,0 +1,6 @@
+module Pods_MediaPickerExample {
+  umbrella header "Pods-MediaPickerExample-umbrella.h"
+
+  export *
+  module * { export * }
+}
