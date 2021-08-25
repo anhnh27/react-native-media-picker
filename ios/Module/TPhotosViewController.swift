@@ -11,7 +11,7 @@ import Photos
 
 @available(iOS 11, *)
 class TPhotosViewController: UIViewController {
-
+    
     fileprivate let imageManager = PHCachingImageManager()
     
     weak var mediaPickerViewController: MediaPickerViewController?
@@ -29,28 +29,34 @@ class TPhotosViewController: UIViewController {
     private var collectionViewFlowLayout: UICollectionViewFlowLayout!
     private var photosCollectionViewHeight: Int!
     
+    private var cellSize: CGSize {
+        let numberOfItemsInRow: CGFloat = 3
+        let innerItemSpacing: CGFloat = 1
+        let width = (photosCollectionView.frame.width - innerItemSpacing * numberOfItemsInRow) / numberOfItemsInRow
+        return CGSize(width: width, height: width)
+    }
+    
     @IBAction func onCancel(_ sender: Any) {
         mediaPickerViewController!.cancel()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationItem.title = assetCollection?.localizedTitle
+        initBottomView()
+        initPhotoCollectionView()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = assetCollection?.localizedTitle
-        initPhotoCollectionView()
         PHPhotoLibrary.shared().register(self)
     }
     
-    private func initPhotoCollectionView(){
-        
-        collectionViewFlowLayout = UICollectionViewFlowLayout()
-        collectionViewFlowLayout.scrollDirection = .vertical
-
-        photosCollectionView.delegate = self
-        photosCollectionView.dataSource = self
-        photosCollectionView.showsVerticalScrollIndicator = false
-        photosCollectionView.allowsMultipleSelection = true
-        photosCollectionView.setCollectionViewLayout(collectionViewFlowLayout, animated: true)
-        
+    deinit {
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+    
+    private func initBottomView() {
         btnClearAll.layer.cornerRadius = 4
         btnClearAll.layer.borderWidth = 1
         btnClearAll.layer.borderColor = #colorLiteral(red: 0, green: 0.5964992642, blue: 1, alpha: 1)
@@ -60,7 +66,7 @@ class TPhotosViewController: UIViewController {
         btnDone.layer.cornerRadius = 4
         btnDone.layer.backgroundColor = #colorLiteral(red: 0, green: 0.5964992642, blue: 1, alpha: 1)
         btnDone.setTitleColor(.white, for: .normal)
-
+        
         btnClearAll.addTarget(self, action: #selector(clearAll(sender:)), for: .touchUpInside)
         btnDone.addTarget(self, action: #selector(done(sender:)), for: .touchUpInside)
         btnDone.setTitle(mediaPickerViewController!.isTCSupport ? DONE_KEY.localized : DONE, for: .normal)
@@ -69,7 +75,20 @@ class TPhotosViewController: UIViewController {
         DispatchQueue.main.async {
             self.selectedPhotoText.text = self.getNumberOfSelectedPhotos()
         }
+    }
+    
+    private func initPhotoCollectionView() {
         
+        collectionViewFlowLayout = UICollectionViewFlowLayout()
+        collectionViewFlowLayout.scrollDirection = .vertical
+        
+        photosCollectionView.delegate = self
+        photosCollectionView.dataSource = self
+        photosCollectionView.prefetchDataSource = self
+        photosCollectionView.showsVerticalScrollIndicator = false
+        photosCollectionView.allowsMultipleSelection = true
+        photosCollectionView.setCollectionViewLayout(collectionViewFlowLayout, animated: true)
+
         updateFetchResults()
     }
     
@@ -80,17 +99,11 @@ class TPhotosViewController: UIViewController {
         
         fetchResult = PHAsset.fetchAssets(in: assetCollection!, options: options)
     }
-    
-    private func getCellWidth() -> CGFloat {
-        let numberOfItemsInRow: CGFloat = 3
-        let innerItemSpacing: CGFloat = 1
-        return ((photosCollectionView.frame.width - innerItemSpacing * numberOfItemsInRow) / numberOfItemsInRow)
-    }
 }
 
 @available(iOS 11, *)
 fileprivate extension TPhotosViewController {
- 
+    
     @objc private func clearAll(sender: UIButton!) {
         selectedPhotos = []
         let indexPaths = photosCollectionView.indexPathsForSelectedItems
@@ -110,10 +123,10 @@ fileprivate extension TPhotosViewController {
         mediaPickerViewController!.didFinishSelection(self)
     }
 }
+
 @available(iOS 11, *)
 extension TPhotosViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
         selectedPhotos.append(fetchResult[indexPath.row].localIdentifier)
         DispatchQueue.main.async {
             self.selectedPhotoText.text = self.getNumberOfSelectedPhotos()
@@ -125,6 +138,7 @@ extension TPhotosViewController: UICollectionViewDelegate {
         selectedPhotos.remove(at: index!)
         DispatchQueue.main.async {
             self.selectedPhotoText.text = self.getNumberOfSelectedPhotos()
+            
         }
     }
     
@@ -147,13 +161,11 @@ extension TPhotosViewController : UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PHOTO_CELL_IDENTIFIER, for: indexPath) as! PhotoCollectionViewCell
         cell.tag = indexPath.row
-        let targetSize = CGSize(width: cell.frame.width * UIScreen.main.scale, height: cell.frame.height * UIScreen.main.scale)
-        imageManager.requestImage(for: fetchResult[indexPath.row], targetSize: targetSize, contentMode: .aspectFill, options: nil) { (image, info) -> Void in
+        let options = PHImageRequestOptions()
+        options.isNetworkAccessAllowed = true
+        // options.progressHandler = {(progress, error, stop, info) in } later may use
+        imageManager.requestImage(for: fetchResult[indexPath.row], targetSize: CGSize(width: cellSize.width * UIScreen.main.nativeScale, height: cellSize.height * UIScreen.main.nativeScale), contentMode: .aspectFill, options: nil) { (image, info) -> Void in
             if cell.tag == indexPath.row {
-                let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                if isDegraded {
-                    return
-                }
                 cell.thumbnail.image = image
             }
         }
@@ -164,8 +176,7 @@ extension TPhotosViewController : UICollectionViewDataSource {
 @available(iOS 11, *)
 extension TPhotosViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let width = getCellWidth()
-        return CGSize(width: width, height: width)
+        return cellSize
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
@@ -179,20 +190,20 @@ extension TPhotosViewController : UICollectionViewDelegateFlowLayout {
 
 @available(iOS 11, *)
 extension TPhotosViewController: UICollectionViewDataSourcePrefetching {
-    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        let numberOfItemsInRow: CGFloat = 3
-        let innerItemSpacing: CGFloat = 1
-        let width = (collectionView.frame.width - innerItemSpacing * numberOfItemsInRow) / numberOfItemsInRow
-        DispatchQueue.main.async {
-            self.imageManager.startCachingImages(for: indexPaths.map{ self.fetchResult!.object(at: $0.item) }, targetSize: CGSize(width: width, height: width), contentMode: .aspectFill, options: nil)
+    private func asset(at indexPaths: [IndexPath]) -> [PHAsset] {
+        indexPaths.map { [weak self] in
+            guard self != nil,
+                  let result = self?.fetchResult[$0.item] else { return PHAsset() }
+            return result
         }
     }
     
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        self.imageManager.startCachingImages(for: asset(at: indexPaths), targetSize: CGSize(width: cellSize.width * UIScreen.main.nativeScale, height: cellSize.height * UIScreen.main.nativeScale), contentMode: .aspectFill, options: nil)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
-        let numberOfItemsInRow: CGFloat = 3
-        let innerItemSpacing: CGFloat = 1
-        let width = (collectionView.frame.width - innerItemSpacing * numberOfItemsInRow) / numberOfItemsInRow
-        self.imageManager.stopCachingImages(for: indexPaths.map{ self.fetchResult!.object(at: $0.item) }, targetSize: CGSize(width: width, height: width), contentMode: .aspectFill, options: nil)
+        self.imageManager.stopCachingImages(for: asset(at: indexPaths), targetSize: CGSize(width: cellSize.width * UIScreen.main.nativeScale, height: cellSize.height * UIScreen.main.nativeScale), contentMode: .aspectFill, options: nil)
     }
 }
 
@@ -216,7 +227,7 @@ extension TPhotosViewController: PHPhotoLibraryChangeObserver {
                     
                     changes.enumerateMoves { fromIndex, toIndex in
                         self.photosCollectionView.moveItem(at: IndexPath(item: fromIndex, section: 0),
-                                                     to: IndexPath(item: toIndex, section: 0))
+                                                           to: IndexPath(item: toIndex, section: 0))
                     }
                 })
                 

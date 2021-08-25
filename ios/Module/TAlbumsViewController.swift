@@ -22,8 +22,15 @@ class TAlbumsViewController: UIViewController {
     var collectionViewFlowLayout: UICollectionViewFlowLayout!
     var loadingIndicator: UIActivityIndicatorView!
     
-    private var manageAccessViewHeight: Int = 90
-    private var albumsCollectionViewHeight: Int = 0
+    let margin: CGFloat = 10
+    
+    private var targetSize: CGSize {
+        let numberOfItemsInRow: CGFloat = 2
+        let innerItemSpacing: CGFloat = margin
+        let width = ((albumsCollectionView.frame.width - innerItemSpacing * (numberOfItemsInRow - 1) - 20) / numberOfItemsInRow).rounded(.towardZero)
+        
+        return CGSize(width: width, height: width)
+    }
     
     @IBOutlet weak var btnCancel: UIBarButtonItem!
     @IBOutlet weak var albumsCollectionView: UICollectionView!
@@ -44,23 +51,19 @@ class TAlbumsViewController: UIViewController {
         mediaPickerViewController!.cancel()
     }
     
+    deinit {
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationItem.title = self.mediaPickerViewController!.isTCSupport ? MY_ALBUMS_KEY.localized : MY_ALBUMS_VALUE
     }
     
-    override func viewDidLayoutSubviews(){
-        super.viewDidLayoutSubviews()
-        let safeAreaHeight = view.safeAreaLayoutGuide.layoutFrame.height
-        albumsCollectionViewHeight = Int(safeAreaHeight) - Int(manageAccessViewHeight)
-        let heightContraint = NSLayoutConstraint(item: albumsCollectionView!, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: CGFloat(albumsCollectionViewHeight))
-        albumsCollectionView.addConstraint(heightContraint)
-        albumsCollectionView.layoutIfNeeded()
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        albumsCollectionView.contentInset = UIEdgeInsets(top: margin, left: margin, bottom: margin, right: margin)
+        manageAccessView.isHidden = true
         setUpToolbarItems()
         
         let smartAlbums: PHFetchResult = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
@@ -74,13 +77,10 @@ class TAlbumsViewController: UIViewController {
         PHPhotoLibrary.shared().register(self)
     }
     
-    deinit {
-        PHPhotoLibrary.shared().unregisterChangeObserver(self)
-    }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let photosViewController: TPhotosViewController = segue.destination as! TPhotosViewController
         photosViewController.mediaPickerViewController = mediaPickerViewController
+        photosViewController.view.backgroundColor = .white
         let index: Int? = albumsCollectionView.indexPathsForSelectedItems?.first?.row
         photosViewController.assetCollection = assetCollections[index!] as? PHAssetCollection
     }
@@ -98,6 +98,8 @@ class TAlbumsViewController: UIViewController {
         infoButtonItem.setTitleTextAttributes((attributes as! [NSAttributedString.Key : Any]), for: UIControl.State.disabled)
         
         self.toolbarItems = [leftSpace, infoButtonItem, rightSpace];
+        
+        
     }
     
     func updateAssetCollections() {
@@ -142,7 +144,7 @@ class TAlbumsViewController: UIViewController {
             })
             
             self.assetCollections = assetCollections
-
+            
             DispatchQueue.main.async {
                 self.loadingIndicator.stopAnimating()
                 self.albumsCollectionView.reloadData()
@@ -158,6 +160,7 @@ class TAlbumsViewController: UIViewController {
         albumsCollectionView.dataSource = self
         albumsCollectionView.setCollectionViewLayout(collectionViewFlowLayout, animated: true)
         albumsCollectionView.showsVerticalScrollIndicator = false
+        albumsCollectionView.delaysContentTouches = false
         
         btnManage.layer.cornerRadius = 12
         btnManage.layer.borderWidth = 1
@@ -169,7 +172,7 @@ class TAlbumsViewController: UIViewController {
         btnManage.setTitle(self.mediaPickerViewController!.isTCSupport ? MANAGE_KEY.localized : MANAGE, for: .normal)
         
         manageAccessLabel.text = self.mediaPickerViewController!.isTCSupport ? LIMITED_PHOTO_ACCESS_MESSAGE_KEY.localized : LIMITED_PHOTO_ACCESS_MESSAGE
-            
+        
         if #available(iOS 14, *) {
             PHPhotoLibrary.requestAuthorization(for: .readWrite) { status in
                 switch status {
@@ -203,7 +206,7 @@ class TAlbumsViewController: UIViewController {
             switch status {
             case .authorized:
                 DispatchQueue.main.async { [self] in
-                    manageAccessView.isHidden = false
+                    manageAccessView.isHidden = true
                 }
                 break;
             case .denied, .restricted, .notDetermined:
@@ -223,13 +226,6 @@ class TAlbumsViewController: UIViewController {
 }
 
 @available(iOS 11, *)
-extension TAlbumsViewController: UICollectionViewDelegate{
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-
-    }
-}
-
-@available(iOS 11, *)
 extension TAlbumsViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return assetCollections.count
@@ -238,8 +234,6 @@ extension TAlbumsViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ALBUM_CELL_IDENTIFIER, for: indexPath) as! AlbumCollectionViewCell
         cell.tag = indexPath.row
-        
-        let targetSize = CGSize(width: cell.frame.width * 2, height: cell.frame.height * 2)
         
         let assetCollection: PHAssetCollection = assetCollections[indexPath.row] as! PHAssetCollection
         let options: PHFetchOptions = PHFetchOptions()
@@ -255,12 +249,8 @@ extension TAlbumsViewController: UICollectionViewDataSource {
             return cell
         }
         
-        imageManager.requestImage(for: fetchResult[fetchResult.count - 1], targetSize: targetSize, contentMode: PHImageContentMode.aspectFill, options: nil) { (image, info) -> Void in
+        imageManager.requestImage(for: fetchResult[fetchResult.count - 1], targetSize: CGSize(width: targetSize.width * UIScreen.main.nativeScale, height: targetSize.height * UIScreen.main.nativeScale), contentMode: PHImageContentMode.aspectFill, options: nil) { (image, info) -> Void in
             if cell.tag == indexPath.row {
-                let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                if isDegraded {
-                    return
-                }
                 cell.thumbnail.image = image
             }
         }
@@ -271,14 +261,7 @@ extension TAlbumsViewController: UICollectionViewDataSource {
 @available(iOS 11, *)
 extension TAlbumsViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let numberOfItemsInRow: CGFloat = 2
-        let innerItemSpacing: CGFloat = 6
-        let width = (collectionView.frame.width - innerItemSpacing * numberOfItemsInRow) / numberOfItemsInRow
-        return CGSize(width: width, height: width)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        return targetSize
     }
 }
 

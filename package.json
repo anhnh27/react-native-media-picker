@@ -36,13 +36,9 @@
     "ios",
     "android"
   ],
-  "repository": "https://git.realestate.com.au/react-native/react-native-media-picker",
-  "author": "Alex <alex.nguyen@rea-group.com> (https://github.com/alexnguyenrea)",
+  "repository": "https://github.com/anhnh27/react-native-media-picker",
+  "author": "Alex <nguyenhoanganh10290@gmail.com> (https://github.com/anhnh27)",
   "license": "MIT",
-  "bugs": {
-    "url": "https://git.realestate.com.au/react-native/react-native-media-picker/issues"
-  },
-  "homepage": "https://git.realestate.com.au/react-native/react-native-media-picker#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

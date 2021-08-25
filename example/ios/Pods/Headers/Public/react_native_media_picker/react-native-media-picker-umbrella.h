@@ -1,1 +1,0 @@
-../../../Target Support Files/react-native-media-picker/react-native-media-picker-umbrella.h
